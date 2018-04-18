@@ -2,59 +2,69 @@ package GameModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import Interfaces.IBuilding;
+import Exceptions.ConditionsUnfullfiled;
+import Exceptions.NegativeAmountOfCoins;
 import Interfaces.IBuildingManager;
 
 public class BuildingManager implements IBuildingManager
 {
-	private Player player;
+	private GameModel context;
 	private List<BuildingTypes> listOfBuildings;
 	
-	public BuildingManager(Player player)
+	public BuildingManager(GameModel context)
 	{
-		this.player = player;
+		this.context = context;
 		this.listOfBuildings = new ArrayList <BuildingTypes>();
 	}
 	
 	@Override
-	public void build(BuildingTypes type) throws InsufficientAmountOfCoins
+	public void build(BuildingTypes type) throws ConditionsUnfullfiled, NegativeAmountOfCoins
 	{
-		coinsSufficiency(type);
 		
-		IBuilding building;
+		BuildingValidator buildingValidator;
+		
 		switch(type)
 		{
 			case Mint:
-				building = new RestrictedBuilding(type);
+				buildingValidator = new RestrictedBuildingValidator(context);
 				break;
 				
 			case GoldMine:
-				building = new RestrictedBuilding(type);
+				buildingValidator = new RestrictedBuildingValidator(context);
 				break;
 				
 			case Sawmill:
-				building = new RestrictedBuilding(type);
+				buildingValidator = new RestrictedBuildingValidator(context);
 				break;
 				
 			default:
-				building = new NormalBuilding(type);
+				buildingValidator = new BuildingValidator(context);
 				break;
 		}
-		
-		if(building.checkConditions(player))
-			listOfBuildings.add(type);
+		buildingValidator.validate(type);
+		context.getCoinManager().setCoins(context.getCoinManager().getCoins()-type.cost);
+		listOfBuildings.add(type);
+		context.getTimerManager().addTimer(10000, type);
 	}
 
-	private void coinsSufficiency(BuildingTypes type) throws InsufficientAmountOfCoins
-	{
-		if(player.getCoinsState().getCoins() < type.cost)
-			throw new InsufficientAmountOfCoins("Cost:"+type.cost+" state:"+player.getCoinsState().getCoins());
-	}
-	
 	@Override
 	public List<BuildingTypes> getBuildings() 
 	{
 		return this.listOfBuildings;
 	}
 
+	public BuildingManager copy() 
+	{
+		BuildingManager buildingManagerCopy = new BuildingManager(this.context);
+		for(BuildingTypes building : listOfBuildings)
+			buildingManagerCopy.listOfBuildings.add(building);
+		
+		return buildingManagerCopy;
+	}
+
+	public void setContext(GameModel context) 
+	{
+		this.context = context;
+	}
+	
 }

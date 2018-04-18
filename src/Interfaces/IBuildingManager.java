@@ -1,11 +1,12 @@
 package Interfaces;
 import java.util.List;
 
+import Exceptions.ConditionsUnfullfiled;
+import Exceptions.NegativeAmountOfCoins;
 import GameModel.BuildingTypes;
-import GameModel.InsufficientAmountOfCoins;
 
 public interface IBuildingManager
 {
 	public List<BuildingTypes> getBuildings();
-	public void build(BuildingTypes type) throws InsufficientAmountOfCoins;
+	public void build(BuildingTypes type) throws NegativeAmountOfCoins, ConditionsUnfullfiled;
 }

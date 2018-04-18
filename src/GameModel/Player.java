@@ -1,28 +1,27 @@
 package GameModel;
-import Interfaces.IBuilding;
-import Interfaces.IBuildingManager;
-import Interfaces.ICoin;
 
 public class Player 
 {
 	private String name;
-	private ICoin coinsState;
-	private IBuildingManager buildingsState;
 	
-	public Player(String name)
+	public Player()
 	{
+		this.setName("New_Player");
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
 		this.name = name;
-		this.coinsState = new CoinManager(this);
-		this.buildingsState = new BuildingManager(this);
 	}
-	
-	public IBuildingManager getBuildingState()
+
+	public Player copy()
 	{
-		return this.buildingsState;
-	}
-	
-	public ICoin getCoinsState()
-	{
-		return this.coinsState;
+		Player playerCopy = new Player();
+		playerCopy.name = this.name;
+		
+		return playerCopy;
 	}
 }

@@ -1,15 +1,23 @@
 package GameModel;
-import Interfaces.ICoin;
+import java.util.ArrayList;
+import java.util.List;
 
-public class CoinManager implements ICoin
+import Exceptions.NegativeAmountOfCoins;
+import Interfaces.ICoinManager;
+import Interfaces.IObservable;
+import Interfaces.IObserver;
+
+public class CoinManager implements ICoinManager, IObservable
 {
-	private Player player;
+	private GameModel context;
 	private int coinState;
+	private List<IObserver> observers;
 	
-	public CoinManager(Player player)
+	public CoinManager(GameModel context)
 	{
-		this.player = player;
+		this.context = context;
 		this.coinState = 2000;
+		this.observers = new ArrayList <IObserver>();
 	}
 
 	@Override
@@ -19,17 +27,49 @@ public class CoinManager implements ICoin
 	}
 
 	@Override
-	public void setCoins(int coinState)
+	public void setCoins(int coinState) throws NegativeAmountOfCoins
 	{
-		this.coinState = coinState;
-	}
-	
-	public void revenueUpdate()
-	{
-		for(BuildingTypes building : player.getBuildingState().getBuildings())
+		if(coinState < 0)
+			throw new NegativeAmountOfCoins();
+		else
 		{
-			this.coinState += building.revenue;
+			this.coinState = coinState;
+			notifyObservers();
 		}
+	}
+
+	@Override
+	public void addObserver(IObserver observer) 
+	{
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(IObserver observer) 
+	{
+		observers.remove(observer);
+	}
+
+	@Override
+	public void notifyObservers() 
+	{
+		for(IObserver o : observers)
+			o.update();
+	}
+
+	public CoinManager copy() 
+	{
+		 CoinManager coinManagerCopy = new CoinManager(this.context);
+		 coinManagerCopy.coinState = this.coinState;
+		 for(IObserver observer : this.observers)
+			 coinManagerCopy.addObserver(observer);
+		 
+		 return coinManagerCopy;
+	}
+
+	public void setContext(GameModel context)
+	{
+		this.context = context;
 	}
 
 }
